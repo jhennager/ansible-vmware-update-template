@@ -1,8 +1,8 @@
 ---
 vcenter_server: "{{ vault_vcenter_ip }}"
 vcenter_user: "{{ vault_vcenter_user }}"
-vcenter_password: "{{vault_vcenter_pass }}"
-vcenter_datacenter: "{{vault_vcenter_dc }}"
+vcenter_password: "{{ vault_vcenter_pass }}"
+vcenter_datacenter: "{{ vault_vcenter_dc }}"
 linux_ssh_user: "{{ vault_ssh_user }}"
 linux_ssh_pass: "{{ vault_ssh_pass }}"
 template_name: "{{ vault_template_name }}"
