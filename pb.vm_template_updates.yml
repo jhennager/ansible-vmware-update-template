@@ -76,7 +76,6 @@
     - name: cleanup "{{ template_name }}", and prepare to convert to template
       shell: "{{ item }}"
       with_items:
-#        - "package-cleanup --oldkernels --count=1"
         - "yum clean all"
         - "/usr/sbin/logrotate -f /etc/logrotate.conf"
         - "/bin/rm -f /var/log/-????????"
