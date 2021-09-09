@@ -1,0 +1,127 @@
+- name: Playbook to update templates in vcenter
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/pb-vars.yml
+    - vault/vault.yml
+
+  tasks:
+   
+    - name: Convert Template "{{ template_name }}" to VM
+      vmware_guest:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        validate_certs: no
+        name: "{{ template_name }}"
+        is_template: False
+        state: present
+        esxi_hostname: "{{ esxi_hostname }}"
+#        datastore: "{{ disk_datastore }}"
+      when: template_name is defined
+      tags: test
+
+    - name: Power on VM  "{{ template_name }}"
+      vmware_guest:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        validate_certs: no
+        name: "{{ template_name }}"
+        state: poweredon
+        wait_for_ip_address: yes
+      when: template_name is defined
+      register: vm_out
+      tags: test
+
+
+    - name: Summer Donna
+      pause:
+        seconds: 10
+
+    - name: Debug variable
+      debug:
+        msg: "{{ vm_out.instance.hw_eth0.ipaddresses[0] }}"
+      tags: test
+
+    - name: Add vm host dynamically to inventory
+      add_host:
+        hostname: "{{ template_name }}"
+        ansible_host: "{{ vm_out.instance.hw_eth0.ipaddresses[0] }}"
+        ansible_ssh_user: "{{ linux_ssh_user }}"
+        ansible_ssh_pass: "{{ linux_ssh_pass }}"
+        ansible_become_password: "{{ linux_ssh_pass }}"
+      no_log: true
+      tags: test
+
+- name: tasks to update all packages and prep "{{ template_name }}"
+  hosts: "{{ template_name }}"
+  gather_facts: no
+  become: yes
+  become_method: su
+  vars_files:
+    - vars/pb-vars.yml
+    - vault/vault.yml
+
+  tasks:
+
+    - name: Update packages on "{{ template_name }}"
+      yum:
+        name: '*'
+        state: latest
+      tags: test
+
+    - name: cleanup "{{ template_name }}", and prepare to convert to template
+      shell: "{{ item }}"
+      with_items:
+#        - "package-cleanup --oldkernels --count=1"
+        - "yum clean all"
+        - "/usr/sbin/logrotate -f /etc/logrotate.conf"
+        - "/bin/rm -f /var/log/-????????"
+        - "/bin/rm -rf /var/log/.gz"
+        - "/bin/rm -f /var/log/dmesg.old"
+        - "/bin/rm -rf /var/log/anaconda"
+        - "/bin/rm -f /etc/udev/rules.d/70*"
+        - "/bin/sed -i '/^(HWADDR|UUID)=/d' /etc/sysconfig/network-scripts/ifcfg-e*"
+        - "/bin/rm -rf /tmp/*"
+        - "/bin/rm -rf /var/tmp/*"
+        - "/bin/rm -f ~root/.bash_history unset HISTFILE"
+      ignore_errors: yes
+      
+
+- name: Playbook to update templates in vcenter
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/pb-vars.yml
+    - vault/vault.yml
+
+  tasks:
+
+    - name: Power Guest "{{ template_name }}" Off
+      vmware_guest:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        validate_certs: no
+        name: "{{ template_name }}"
+        state: shutdownguest
+        state_change_timeout: 120
+      when: template_name is defined
+      register: shutdown
+      tags: test4
+
+    - name: Convert VM "{{ template_name }}" to Template
+      vmware_guest:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        validate_certs: no
+        name: "{{ template_name }}"
+        is_template: yes
+      when: template_name is defined
+      tags: test4

@@ -1,0 +1,11 @@
+---
+vcenter_server: "{{ vault_vcenter_ip }}"
+vcenter_user: "{{ vault_vcenter_user }}"
+vcenter_password: "{{vault_vcenter_pass }}"
+vcenter_datacenter: "Deth23.lab"
+linux_ssh_user: "{{ vault_ssh_user }}"
+linux_ssh_pass: "{{ vault_ssh_pass }}"
+template_name: "Centos7-template"
+esxi_hostname: "{{ vault_esxi_hostname }}"
+disk_datastore: "M2_SSD"
+
