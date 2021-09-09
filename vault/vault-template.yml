@@ -4,4 +4,6 @@ vault_vcenter_pass:
 vault_ssh_user:
 vault_ssh_pass:
 vault_esxi_hostname:
+vault_vcenter_dc:
+vault_template_name:
 
