@@ -1,8 +1,0 @@
-- name: Run all security and critical updates
-  win_updates:
-    reboot: yes
-    reboot_timeout: 2400
-    category_name:
-      - SecurityUpdates
-      - CriticalUpdates
-      - UpdateRollups

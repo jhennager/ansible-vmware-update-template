@@ -1,8 +1,12 @@
+---
+
+## Connect to vcenter, identify the template, convert it and power it on ##
+
 - name: Playbook to update templates in vcenter
   hosts: localhost
   gather_facts: no
   vars_files:
-    - vars/pb-vars.yml
+    - vars/vars.yml
     - vault/vault.yml
 
   tasks:
@@ -18,7 +22,6 @@
         is_template: False
         state: present
         esxi_hostname: "{{ esxi_hostname }}"
-#        datastore: "{{ disk_datastore }}"
       when: template_name is defined
       tags: test
 
@@ -37,14 +40,9 @@
       tags: test
 
 
-    - name: Summer Donna
+    - name: Pause for 10 seconds to allow for full boot up
       pause:
         seconds: 10
-
-    - name: Debug variable
-      debug:
-        msg: "{{ vm_out.instance.hw_eth0.ipaddresses[0] }}"
-      tags: test
 
     - name: Add vm host dynamically to inventory
       add_host:
@@ -56,13 +54,15 @@
       no_log: true
       tags: test
 
+## Connect to the newly converted VM, update packages, then clean it up and convert back to a template ##
+
 - name: tasks to update all packages and prep "{{ template_name }}"
   hosts: "{{ template_name }}"
   gather_facts: no
   become: yes
   become_method: su
   vars_files:
-    - vars/pb-vars.yml
+    - vars/vars.yml
     - vault/vault.yml
 
   tasks:
@@ -89,12 +89,13 @@
         - "/bin/rm -f ~root/.bash_history unset HISTFILE"
       ignore_errors: yes
       
+## Connect to vcenter, power off the vm, and convert it back to a template for later use ##
 
 - name: Playbook to update templates in vcenter
   hosts: localhost
   gather_facts: no
   vars_files:
-    - vars/pb-vars.yml
+    - vars/vars.yml
     - vault/vault.yml
 
   tasks:
