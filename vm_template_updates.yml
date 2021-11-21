@@ -4,7 +4,7 @@
 
 - name: Playbook to update templates in vcenter
   hosts: localhost
-  gather_facts: no
+  gather_facts: yes
   vars_files:
     - vars/vars.yml
     - vault/vault.yml
@@ -49,6 +49,7 @@
         ansible_ssh_user: "{{ linux_ssh_user }}"
         ansible_ssh_pass: "{{ linux_ssh_pass }}"
         ansible_become_password: "{{ linux_ssh_pass }}"
+        ansible_python_interpreter: "/usr/bin/python"
       no_log: true
 
 ## Connect to the newly converted VM, update packages, then clean it up and convert back to a template ##
@@ -68,6 +69,7 @@
       yum:
         name: '*'
         state: latest
+        use_backend: yum
 
     - name: cleanup "{{ template_name }}", and prepare to convert to template
       shell: "{{ item }}"

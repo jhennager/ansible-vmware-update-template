@@ -1,2 +1,12 @@
 [local]
 localhost ansible_connection=local ansible_python_interpreter="/usr/bin/python3"
+
+[sonarr]
+192.168.0.11
+
+[sonarr:vars]
+ansible_user="{{ vault_ssh_user }}"
+ansible_password="{{ vault_ssh_pass }}"
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore
+ansible_winrm_transport=basic
